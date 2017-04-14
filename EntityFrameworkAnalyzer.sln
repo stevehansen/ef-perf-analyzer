@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntityFrameworkAnalyzer", "EntityFrameworkAnalyzer\EntityFrameworkAnalyzer\EntityFrameworkAnalyzer.csproj", "{F3709497-B66E-4DD8-8D1F-D19B4A5CB87A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntityFrameworkAnalyzer.Test", "EntityFrameworkAnalyzer\EntityFrameworkAnalyzer.Test\EntityFrameworkAnalyzer.Test.csproj", "{6B01FFAD-9070-4B73-886B-5077CF770696}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntityFrameworkAnalyzer.Vsix", "EntityFrameworkAnalyzer\EntityFrameworkAnalyzer.Vsix\EntityFrameworkAnalyzer.Vsix.csproj", "{16DCDF23-E482-45E3-AB97-A772725B5B14}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F3709497-B66E-4DD8-8D1F-D19B4A5CB87A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3709497-B66E-4DD8-8D1F-D19B4A5CB87A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3709497-B66E-4DD8-8D1F-D19B4A5CB87A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3709497-B66E-4DD8-8D1F-D19B4A5CB87A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B01FFAD-9070-4B73-886B-5077CF770696}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B01FFAD-9070-4B73-886B-5077CF770696}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B01FFAD-9070-4B73-886B-5077CF770696}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B01FFAD-9070-4B73-886B-5077CF770696}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16DCDF23-E482-45E3-AB97-A772725B5B14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16DCDF23-E482-45E3-AB97-A772725B5B14}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16DCDF23-E482-45E3-AB97-A772725B5B14}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16DCDF23-E482-45E3-AB97-A772725B5B14}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

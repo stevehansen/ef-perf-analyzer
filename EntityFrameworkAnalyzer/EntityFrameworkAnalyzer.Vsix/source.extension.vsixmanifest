@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
+  <Metadata>
+    <Identity Id="EntityFrameworkPerformanceAnalyzer..d8c3b52e-972e-43cf-8062-b5a4e87d2733" Version="1.1" Language="en-US" Publisher="Steve Hansen"/>
+    <DisplayName>EntityFramework Performance Analyzer</DisplayName>
+    <Description xml:space="preserve">A diagnostic analyzer for common EntityFramework performance issues.</Description>
+    <Tags>roslyn analyzer ef entity-frameowrk</Tags>
+  </Metadata>
+  <Installation>
+    <InstallationTarget Version="[14.0,]" Id="Microsoft.VisualStudio.Pro" />
+  </Installation>
+  <Dependencies>
+    <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />
+  </Dependencies>
+  <Assets>
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="EntityFrameworkAnalyzer" Path="|EntityFrameworkAnalyzer|"/>
+    <Asset Type="Microsoft.VisualStudio.Analyzer" d:Source="Project" d:ProjectName="EntityFrameworkAnalyzer" Path="|EntityFrameworkAnalyzer|"/>
+  </Assets>
+  <Prerequisites>
+    <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[15.0,16.0)" DisplayName="Visual Studio core editor" />
+    <Prerequisite Id="Microsoft.VisualStudio.Component.Roslyn.LanguageServices" Version="[15.0,16.0)" DisplayName="Roslyn Language Services" />
+  </Prerequisites>
+</PackageManifest>
