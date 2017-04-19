@@ -80,6 +80,9 @@ namespace EntityFrameworkAnalyzer
                             if (parent is BinaryExpressionSyntax binExpr && binExpr.Right is LiteralExpressionSyntax litExpr && litExpr.Token.Value == null)
                                 return new { Parent = parent, Identifier = n, Type = "Ignore", Name = default(string) };
 
+                            if (parent is ConditionalAccessExpressionSyntax conditionalAccessExpr && conditionalAccessExpr.WhenNotNull is MemberBindingExpressionSyntax memberBindingExpr)
+                                return new { Parent = parent, Identifier = n, Type = "MemberAccess", Name = memberBindingExpr.Name.Identifier.Text };
+
                             return new { Parent = parent, Identifier = n, Type = "Unknown", Name = default(string) };
                         })
                         .Where(t => t.Type != "Ignore")

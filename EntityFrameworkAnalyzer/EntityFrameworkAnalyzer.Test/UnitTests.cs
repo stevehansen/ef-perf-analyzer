@@ -18,6 +18,66 @@ namespace EntityFrameworkAnalyzer.Test
         }
 
         [TestMethod]
+        public void DontSuggestForConst()
+        {
+            var test = @"
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
+    using System.Diagnostics;
+
+    namespace ConsoleApplication1
+    {
+        class TypeName
+        {
+            public void Do()
+            {
+                const var i = 0;
+            }
+        }
+    }";
+
+            VerifyCSharpDiagnostic(test);
+        }
+
+        [TestMethod]
+        public void DontSuggestForAssignment()
+        {
+            var test = @"
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
+    using System.Diagnostics;
+
+    namespace ConsoleApplication1
+    {
+        class Person
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+        }
+
+        class TypeName
+        {
+            public IQueryable<Person> people;
+
+            public void Do()
+            {
+                var person = people.First();
+                var name = person.Name;
+                person = null;
+            }
+        }
+    }";
+
+            VerifyCSharpDiagnostic(test);
+        }
+
+        [TestMethod]
         public void FixSingleProperty()
         {
             var test = @"
@@ -393,6 +453,79 @@ namespace EntityFrameworkAnalyzer.Test
         }
 
         [TestMethod]
+        public void FixNullConditionalProperty()
+        {
+            var test = @"
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
+    using System.Diagnostics;
+
+    namespace ConsoleApplication1
+    {
+        class Person
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+        }
+
+        class TypeName
+        {
+            public IQueryable<Person> people;
+
+            public void Do()
+            {
+                var person = people.FirstOrDefault();
+                var name = person?.Name;
+            }
+        }
+    }";
+            var expected = new DiagnosticResult
+            {
+                Id = Diagnostics.EFPERF001.Id,
+                Message = "Variable 'person' is only used for properties: Name",
+                Severity = DiagnosticSeverity.Warning,
+                Locations =
+                    new[] {
+                        new DiagnosticResultLocation("Test0.cs", 23, 21)
+                    }
+            };
+
+            VerifyCSharpDiagnostic(test, expected);
+
+            var fixtest = @"
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
+    using System.Diagnostics;
+
+    namespace ConsoleApplication1
+    {
+        class Person
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+        }
+
+        class TypeName
+        {
+            public IQueryable<Person> people;
+
+            public void Do()
+            {
+                var person = people.Select(it => new { it.Name }).FirstOrDefault();
+                var name = person?.Name;
+            }
+        }
+    }";
+            VerifyCSharpFix(test, fixtest);
+        }
+
+        [TestMethod]
         public void FixAndRewriteCondition()
         {
             var test = @"
@@ -692,7 +825,7 @@ namespace EntityFrameworkAnalyzer.Test
 
             public void Do()
             {
-                Person person = people.First();
+                var person = people.First();
                 person.Write();
             }
         }
