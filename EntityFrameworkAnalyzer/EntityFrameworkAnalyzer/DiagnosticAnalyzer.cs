@@ -37,7 +37,7 @@ namespace EntityFrameworkAnalyzer
             if (init is InvocationExpressionSyntax invocation && invocation.ArgumentList.Arguments.Count <= 1 && invocation.Expression is MemberAccessExpressionSyntax memberAccess)
             {
                 var name = memberAccess.Name.Identifier.Text;
-                if (name != "First" && name != "FirstOrDefault")
+                if (name != "First" && name != "FirstOrDefault" && name != "Single" && name != "SingleOrDefault")
                     return;
 
                 bool IsNameofExpression(SyntaxNode parent)
