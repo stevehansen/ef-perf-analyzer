@@ -6,10 +6,12 @@
     <title>EntityFramework Performance Analyzer</title>
     <authors>Steve Hansen</authors>
     <owners>Steve Hansen</owners>
+    <projectUrl>https://github.com/stevehansen/ef-perf-analyzer</projectUrl>
+    <licenseUrl>https://raw.githubusercontent.com/stevehansen/ef-perf-analyzer/master/LICENSE</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>A diagnostic analyzer for common EntityFramework performance issues.</description>
-    <copyright>Copyright</copyright>
-    <tags>EntityFrameworkAnalyzer, analyzers, ef, roslyn</tags>
+    <copyright>Copyright 2017 Steve Hansen</copyright>
+    <tags>analyzer entityframework ef roslyn</tags>
     <frameworkAssemblies>
       <frameworkAssembly assemblyName="System" targetFramework="" />
     </frameworkAssemblies>
