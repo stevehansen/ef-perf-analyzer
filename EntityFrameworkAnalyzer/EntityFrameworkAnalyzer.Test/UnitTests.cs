@@ -151,6 +151,79 @@ namespace EntityFrameworkAnalyzer.Test
         }
 
         [TestMethod]
+        public void FixSingleStringPropertySubstring()
+        {
+            var test = @"
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
+    using System.Diagnostics;
+
+    namespace ConsoleApplication1
+    {
+        class Person
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+        }
+
+        class TypeName
+        {
+            public IQueryable<Person> people;
+
+            public void Do()
+            {
+                var person = people.First();
+                var name = person.Name.Substring(0, 2);
+            }
+        }
+    }";
+            var expected = new DiagnosticResult
+            {
+                Id = Diagnostics.EFPERF001.Id,
+                Message = "Variable 'person' is only used for properties: Name",
+                Severity = DiagnosticSeverity.Warning,
+                Locations =
+                    new[] {
+                        new DiagnosticResultLocation("Test0.cs", 23, 21)
+                    }
+            };
+
+            VerifyCSharpDiagnostic(test, expected);
+
+            var fixtest = @"
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
+    using System.Diagnostics;
+
+    namespace ConsoleApplication1
+    {
+        class Person
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+        }
+
+        class TypeName
+        {
+            public IQueryable<Person> people;
+
+            public void Do()
+            {
+                var person = people.Select(it => new { it.Name }).First();
+                var name = person.Name.Substring(0, 2);
+            }
+        }
+    }";
+            VerifyCSharpFix(test, fixtest);
+        }
+
+        [TestMethod]
         public void FixSinglePropertyToField()
         {
             var test = @"
@@ -797,6 +870,36 @@ namespace EntityFrameworkAnalyzer.Test
                 Person person;
                 person = people.First();
                 var name = person.Name;
+            }
+        }
+    }";
+            VerifyCSharpDiagnostic(test);
+        }
+
+        [TestMethod]
+        public void DontSuggestForCollectionMemberMethod()
+        {
+            var test = @"
+    using System.Collections.Generic;
+    using System.Linq;
+
+    namespace ConsoleApplication1
+    {
+        class Person
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+            public ICollection<string> Members { get; set; }
+        }
+
+        class TypeName
+        {
+            public IQueryable<Person> people;
+
+            public void Do()
+            {
+                var person = people.First();
+                person.Members.Add(person.Name);
             }
         }
     }";

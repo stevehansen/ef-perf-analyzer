@@ -48,6 +48,17 @@ namespace EntityFrameworkAnalyzer
                         && nameExpr.Identifier.Text == "nameof";
                 }
 
+                bool IsCollectionMemberMethodExpression(SyntaxNode parent)
+                {
+                    if (parent.Parent is MemberAccessExpressionSyntax memberAccessExpr && memberAccessExpr.Parent is InvocationExpressionSyntax memberInvExpr)
+                    {
+                        var memberMethodSymbol = context.SemanticModel.GetSymbolInfo(memberInvExpr.Expression).Symbol as IMethodSymbol;
+                        return memberMethodSymbol?.Name == "Add" || memberMethodSymbol?.Name == "Remove";
+                    }
+
+                    return false;
+                }
+
                 var methodSymbol = context.SemanticModel.GetSymbolInfo(invocation.Expression).Symbol as IMethodSymbol;
                 if (methodSymbol?.ContainingType.Name == "Queryable" && methodSymbol.TypeArguments.Length == 1 && !methodSymbol.TypeArguments[0].IsAnonymousType)
                 {
@@ -72,6 +83,8 @@ namespace EntityFrameworkAnalyzer
                                     type = "MemberUnary";
                                 else if (IsNameofExpression(parent))
                                     type = "Ignore";
+                                else if (IsCollectionMemberMethodExpression(parent))
+                                    type = "MemberMethodAccess";
                                 else
                                     type = "MemberAccess";
                                 return new { Parent = parent, Identifier = n, Type = type, Name = memberAccessExpr.Name.Identifier.Text };
