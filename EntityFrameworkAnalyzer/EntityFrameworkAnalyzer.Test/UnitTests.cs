@@ -21,13 +21,6 @@ namespace EntityFrameworkAnalyzer.Test
         public void DontSuggestForConst()
         {
             var test = @"
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using System.Diagnostics;
-
     namespace ConsoleApplication1
     {
         class TypeName
@@ -592,6 +585,79 @@ namespace EntityFrameworkAnalyzer.Test
             {
                 var person = people.Select(it => new { it.Name }).FirstOrDefault();
                 var name = person?.Name;
+            }
+        }
+    }";
+            VerifyCSharpFix(test, fixtest);
+        }
+
+        [TestMethod]
+        public void FixPropertyAsArgument()
+        {
+            var test = @"
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
+    using System.Diagnostics;
+
+    namespace ConsoleApplication1
+    {
+        class Person
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+        }
+
+        class TypeName
+        {
+            public IQueryable<Person> people;
+
+            public void Do()
+            {
+                var person = people.FirstOrDefault();
+                Console.WriteName(person.Name);
+            }
+        }
+    }";
+            var expected = new DiagnosticResult
+            {
+                Id = Diagnostics.EFPERF001.Id,
+                Message = "Variable 'person' is only used for properties: Name",
+                Severity = DiagnosticSeverity.Warning,
+                Locations =
+                    new[] {
+                        new DiagnosticResultLocation("Test0.cs", 23, 21)
+                    }
+            };
+
+            VerifyCSharpDiagnostic(test, expected);
+
+            var fixtest = @"
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
+    using System.Diagnostics;
+
+    namespace ConsoleApplication1
+    {
+        class Person
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+        }
+
+        class TypeName
+        {
+            public IQueryable<Person> people;
+
+            public void Do()
+            {
+                var person = people.Select(it => new { it.Name }).FirstOrDefault();
+                Console.WriteName(person.Name);
             }
         }
     }";
