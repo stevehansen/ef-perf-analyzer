@@ -37,6 +37,9 @@
     <Compile Include="CodeFixProvider.cs" />
     <Compile Include="DiagnosticAnalyzer.cs" />
     <Compile Include="Diagnostics.cs" />
+    <Compile Include="EFPERF002CodeFixProvider.cs" />
+    <Compile Include="EFPERF004CodeFixProvider.cs" />
+    <Compile Include="EFPERF005CodeFixProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>

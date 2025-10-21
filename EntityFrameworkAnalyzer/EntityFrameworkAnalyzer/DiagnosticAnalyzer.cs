@@ -20,6 +20,9 @@ namespace EntityFrameworkAnalyzer
         public override void Initialize(AnalysisContext context)
         {
             context.RegisterSyntaxNodeAction(AnalyzeQueryableVariable, SyntaxKind.LocalDeclarationStatement);
+            context.RegisterSyntaxNodeAction(AnalyzeForAsNoTracking, SyntaxKind.InvocationExpression);
+            context.RegisterSyntaxNodeAction(AnalyzeForClientSideEvaluation, SyntaxKind.InvocationExpression);
+            context.RegisterSyntaxNodeAction(AnalyzeForSyncQueries, SyntaxKind.InvocationExpression);
         }
 
         private static void AnalyzeQueryableVariable(SyntaxNodeAnalysisContext context)
@@ -118,6 +121,146 @@ namespace EntityFrameworkAnalyzer
                         // TODO: Check for usage as method argument
                     }
                 }
+            }
+        }
+
+        // EFPERF002: Check for missing AsNoTracking on read-only queries
+        private static void AnalyzeForAsNoTracking(SyntaxNodeAnalysisContext context)
+        {
+            var invocation = (InvocationExpressionSyntax)context.Node;
+            if (invocation.Expression is MemberAccessExpressionSyntax memberAccess)
+            {
+                var methodName = memberAccess.Name.Identifier.Text;
+
+                // Check if it's a terminal query method
+                if (methodName == "ToList" || methodName == "ToArray" || methodName == "FirstOrDefault" ||
+                    methodName == "First" || methodName == "SingleOrDefault" || methodName == "Single")
+                {
+                    var methodSymbol = context.SemanticModel.GetSymbolInfo(invocation.Expression).Symbol as IMethodSymbol;
+                    if (methodSymbol?.ContainingType.Name == "Queryable" ||
+                        methodSymbol?.ContainingType.Name == "EntityFrameworkQueryableExtensions")
+                    {
+                        // Walk up the expression chain to check if AsNoTracking is already called
+                        var current = memberAccess.Expression;
+                        var hasAsNoTracking = false;
+
+                        while (current != null)
+                        {
+                            if (current is InvocationExpressionSyntax innerInvocation &&
+                                innerInvocation.Expression is MemberAccessExpressionSyntax innerMemberAccess &&
+                                innerMemberAccess.Name.Identifier.Text == "AsNoTracking")
+                            {
+                                hasAsNoTracking = true;
+                                break;
+                            }
+
+                            current = (current as MemberAccessExpressionSyntax)?.Expression ??
+                                     (current as InvocationExpressionSyntax)?.Expression;
+                        }
+
+                        if (!hasAsNoTracking)
+                        {
+                            // Check if the result is modified (not read-only)
+                            var isReadOnly = IsQueryReadOnly(context, invocation);
+                            if (isReadOnly)
+                            {
+                                context.ReportDiagnostic(Diagnostic.Create(Diagnostics.EFPERF002, invocation.GetLocation(), methodName));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // EFPERF004: Check for client-side evaluation (filtering after ToList/ToArray)
+        private static void AnalyzeForClientSideEvaluation(SyntaxNodeAnalysisContext context)
+        {
+            var invocation = (InvocationExpressionSyntax)context.Node;
+            if (invocation.Expression is MemberAccessExpressionSyntax memberAccess)
+            {
+                var methodName = memberAccess.Name.Identifier.Text;
+
+                // Check if it's a LINQ method that should be done server-side
+                if (methodName == "Where" || methodName == "Select" || methodName == "OrderBy" ||
+                    methodName == "OrderByDescending" || methodName == "Skip" || methodName == "Take")
+                {
+                    var methodSymbol = context.SemanticModel.GetSymbolInfo(invocation.Expression).Symbol as IMethodSymbol;
+                    if (methodSymbol?.ContainingType.Name == "Enumerable")
+                    {
+                        // Check if the previous operation was ToList or ToArray
+                        var current = memberAccess.Expression;
+                        if (current is InvocationExpressionSyntax prevInvocation &&
+                            prevInvocation.Expression is MemberAccessExpressionSyntax prevMemberAccess)
+                        {
+                            var prevMethodName = prevMemberAccess.Name.Identifier.Text;
+                            if (prevMethodName == "ToList" || prevMethodName == "ToArray")
+                            {
+                                context.ReportDiagnostic(Diagnostic.Create(Diagnostics.EFPERF004, invocation.GetLocation(), methodName));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // EFPERF005: Check for synchronous query methods that should be async
+        private static void AnalyzeForSyncQueries(SyntaxNodeAnalysisContext context)
+        {
+            var invocation = (InvocationExpressionSyntax)context.Node;
+            if (invocation.Expression is MemberAccessExpressionSyntax memberAccess)
+            {
+                var methodName = memberAccess.Name.Identifier.Text;
+
+                // Check if it's a synchronous terminal query method
+                var asyncVariant = GetAsyncVariant(methodName);
+                if (asyncVariant != null)
+                {
+                    var methodSymbol = context.SemanticModel.GetSymbolInfo(invocation.Expression).Symbol as IMethodSymbol;
+                    if (methodSymbol?.ContainingType.Name == "Queryable" ||
+                        methodSymbol?.ContainingType.Name == "EntityFrameworkQueryableExtensions")
+                    {
+                        // Check if we're in an async method context
+                        var enclosingMethod = context.Node.Ancestors().OfType<MethodDeclarationSyntax>().FirstOrDefault();
+                        if (enclosingMethod?.Modifiers.Any(m => m.IsKind(SyntaxKind.AsyncKeyword)) == true)
+                        {
+                            context.ReportDiagnostic(Diagnostic.Create(Diagnostics.EFPERF005, invocation.GetLocation(), methodName, asyncVariant));
+                        }
+                    }
+                }
+            }
+        }
+
+        private static bool IsQueryReadOnly(SyntaxNodeAnalysisContext context, InvocationExpressionSyntax invocation)
+        {
+            // Simple heuristic: if the variable is not assigned to or passed to a modification method, it's read-only
+            // This is a simplified check - in production, you'd want more sophisticated analysis
+            var parent = invocation.Parent;
+            while (parent != null)
+            {
+                if (parent is AssignmentExpressionSyntax assignment && assignment.Right == invocation)
+                {
+                    // Check if the assigned variable is later modified
+                    return true; // Simplified - assume read-only for now
+                }
+                parent = parent.Parent;
+            }
+            return true;
+        }
+
+        private static string GetAsyncVariant(string methodName)
+        {
+            switch (methodName)
+            {
+                case "ToList": return "ToListAsync";
+                case "ToArray": return "ToArrayAsync";
+                case "FirstOrDefault": return "FirstOrDefaultAsync";
+                case "First": return "FirstAsync";
+                case "SingleOrDefault": return "SingleOrDefaultAsync";
+                case "Single": return "SingleAsync";
+                case "Count": return "CountAsync";
+                case "Any": return "AnyAsync";
+                case "All": return "AllAsync";
+                default: return null;
             }
         }
 

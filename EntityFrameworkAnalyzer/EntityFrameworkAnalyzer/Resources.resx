@@ -126,4 +126,40 @@
   <data name="AnalyzerTitle" xml:space="preserve">
     <value>Prefer queryable projection to reduce data sent from server</value>
   </data>
+  <data name="EFPERF002Description" xml:space="preserve">
+    <value>Use AsNoTracking for read-only queries to improve performance</value>
+  </data>
+  <data name="EFPERF002MessageFormat" xml:space="preserve">
+    <value>Query '{0}' is read-only and should use AsNoTracking() for better performance</value>
+  </data>
+  <data name="EFPERF002Title" xml:space="preserve">
+    <value>Read-only query should use AsNoTracking()</value>
+  </data>
+  <data name="EFPERF003Description" xml:space="preserve">
+    <value>Potential N+1 query problem - use Include() or eager loading</value>
+  </data>
+  <data name="EFPERF003MessageFormat" xml:space="preserve">
+    <value>Navigation property '{0}' accessed in loop - potential N+1 query. Consider using Include()</value>
+  </data>
+  <data name="EFPERF003Title" xml:space="preserve">
+    <value>Potential N+1 query detected</value>
+  </data>
+  <data name="EFPERF004Description" xml:space="preserve">
+    <value>Avoid client-side evaluation by filtering before materializing</value>
+  </data>
+  <data name="EFPERF004MessageFormat" xml:space="preserve">
+    <value>Filter operation '{0}' occurs after ToList/ToArray - move filtering before materialization</value>
+  </data>
+  <data name="EFPERF004Title" xml:space="preserve">
+    <value>Client-side evaluation detected</value>
+  </data>
+  <data name="EFPERF005Description" xml:space="preserve">
+    <value>Query executed synchronously - consider using async variant</value>
+  </data>
+  <data name="EFPERF005MessageFormat" xml:space="preserve">
+    <value>Method '{0}' should use async variant '{1}' for better scalability</value>
+  </data>
+  <data name="EFPERF005Title" xml:space="preserve">
+    <value>Use async query methods</value>
+  </data>
 </root>
