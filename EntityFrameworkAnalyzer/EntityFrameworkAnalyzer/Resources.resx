@@ -118,12 +118,39 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AnalyzerDescription" xml:space="preserve">
-    <value>Prefer projection when querying data from the database</value>
+    <value>Prefer projection when querying data from the database.</value>
   </data>
   <data name="AnalyzerMessageFormat" xml:space="preserve">
     <value>Variable '{0}' is only used for properties: {1}</value>
   </data>
   <data name="AnalyzerTitle" xml:space="preserve">
     <value>Prefer queryable projection to reduce data sent from server</value>
+  </data>
+  <data name="EFPERF002Description" xml:space="preserve">
+    <value>Change tracking costs time and memory and only pays off when the loaded entities are changed and saved. Queries in members that never change, save or return entities can use AsNoTracking().</value>
+  </data>
+  <data name="EFPERF002MessageFormat" xml:space="preserve">
+    <value>Entities loaded by '{0}' are never changed or saved here; use AsNoTracking() to skip change tracking</value>
+  </data>
+  <data name="EFPERF002Title" xml:space="preserve">
+    <value>Read-only query should use AsNoTracking()</value>
+  </data>
+  <data name="EFPERF004Description" xml:space="preserve">
+    <value>Where, Skip and Take after ToList or ToArray run in memory over every loaded row. Applying them before materialization lets the database do the work.</value>
+  </data>
+  <data name="EFPERF004MessageFormat" xml:space="preserve">
+    <value>'{0}' runs in memory over every row loaded by '{1}'; move it before '{1}'</value>
+  </data>
+  <data name="EFPERF004Title" xml:space="preserve">
+    <value>Client-side evaluation detected</value>
+  </data>
+  <data name="EFPERF005Description" xml:space="preserve">
+    <value>Synchronous query methods block the thread of an async method. Use the async variant and await it.</value>
+  </data>
+  <data name="EFPERF005MessageFormat" xml:space="preserve">
+    <value>Method '{0}' should use async variant '{1}' for better scalability</value>
+  </data>
+  <data name="EFPERF005Title" xml:space="preserve">
+    <value>Use async query methods</value>
   </data>
 </root>

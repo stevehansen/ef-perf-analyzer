@@ -1,24 +1,21 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeFixes;
-using Microsoft.CodeAnalysis.Diagnostics;
+﻿using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using TestHelper;
 
 namespace EntityFrameworkAnalyzer.Test
 {
     [TestClass]
-    public class UnitTest : CodeFixVerifier
+    public class UnitTest
     {
         [TestMethod]
-        public void DontSuggestForEmpty()
+        public async Task DontSuggestForEmpty()
         {
             var test = @"";
 
-            VerifyCSharpDiagnostic(test);
+            await Verify.AnalyzerAsync(References.NoEF, test);
         }
 
         [TestMethod]
-        public void DontSuggestForConst()
+        public async Task DontSuggestForConst()
         {
             var test = @"
     namespace ConsoleApplication1
@@ -27,16 +24,16 @@ namespace EntityFrameworkAnalyzer.Test
         {
             public void Do()
             {
-                const var i = 0;
+                const int i = 0;
             }
         }
     }";
 
-            VerifyCSharpDiagnostic(test);
+            await Verify.AnalyzerAsync(References.NoEF, test);
         }
 
         [TestMethod]
-        public void DontSuggestForAssignment()
+        public async Task DontSuggestForAssignment()
         {
             var test = @"
     using System;
@@ -67,11 +64,11 @@ namespace EntityFrameworkAnalyzer.Test
         }
     }";
 
-            VerifyCSharpDiagnostic(test);
+            await Verify.AnalyzerAsync(References.NoEF, test);
         }
 
         [TestMethod]
-        public void FixSingleProperty()
+        public async Task FixSingleProperty()
         {
             var test = @"
     using System;
@@ -100,18 +97,9 @@ namespace EntityFrameworkAnalyzer.Test
             }
         }
     }";
-            var expected = new DiagnosticResult
-            {
-                Id = Diagnostics.EFPERF001.Id,
-                Message = "Variable 'person' is only used for properties: Name",
-                Severity = DiagnosticSeverity.Warning,
-                Locations =
-                    new[] {
-                            new DiagnosticResultLocation("Test0.cs", 23, 21)
-                        }
-            };
-
-            VerifyCSharpDiagnostic(test, expected);
+            var expected = Verify.Diagnostic(Diagnostics.EFPERF001)
+                .WithMessage("Variable 'person' is only used for properties: Name")
+                .WithLocation(23, 21);
 
             var fixtest = @"
     using System;
@@ -140,11 +128,11 @@ namespace EntityFrameworkAnalyzer.Test
             }
         }
     }";
-            VerifyCSharpFix(test, fixtest);
+            await Verify.CodeFixAsync<EFPERF001CodeFixProvider>(References.NoEF, test, fixtest, expected);
         }
 
         [TestMethod]
-        public void FixSingleStringPropertySubstring()
+        public async Task FixSingleStringPropertySubstring()
         {
             var test = @"
     using System;
@@ -173,18 +161,9 @@ namespace EntityFrameworkAnalyzer.Test
             }
         }
     }";
-            var expected = new DiagnosticResult
-            {
-                Id = Diagnostics.EFPERF001.Id,
-                Message = "Variable 'person' is only used for properties: Name",
-                Severity = DiagnosticSeverity.Warning,
-                Locations =
-                    new[] {
-                        new DiagnosticResultLocation("Test0.cs", 23, 21)
-                    }
-            };
-
-            VerifyCSharpDiagnostic(test, expected);
+            var expected = Verify.Diagnostic(Diagnostics.EFPERF001)
+                .WithMessage("Variable 'person' is only used for properties: Name")
+                .WithLocation(23, 21);
 
             var fixtest = @"
     using System;
@@ -213,11 +192,11 @@ namespace EntityFrameworkAnalyzer.Test
             }
         }
     }";
-            VerifyCSharpFix(test, fixtest);
+            await Verify.CodeFixAsync<EFPERF001CodeFixProvider>(References.NoEF, test, fixtest, expected);
         }
 
         [TestMethod]
-        public void FixSinglePropertyToField()
+        public async Task FixSinglePropertyToField()
         {
             var test = @"
     using System;
@@ -247,18 +226,9 @@ namespace EntityFrameworkAnalyzer.Test
             }
         }
     }";
-            var expected = new DiagnosticResult
-            {
-                Id = Diagnostics.EFPERF001.Id,
-                Message = "Variable 'person' is only used for properties: Name",
-                Severity = DiagnosticSeverity.Warning,
-                Locations =
-                    new[] {
-                        new DiagnosticResultLocation("Test0.cs", 24, 21)
-                    }
-            };
-
-            VerifyCSharpDiagnostic(test, expected);
+            var expected = Verify.Diagnostic(Diagnostics.EFPERF001)
+                .WithMessage("Variable 'person' is only used for properties: Name")
+                .WithLocation(24, 21);
 
             var fixtest = @"
     using System;
@@ -288,11 +258,11 @@ namespace EntityFrameworkAnalyzer.Test
             }
         }
     }";
-            VerifyCSharpFix(test, fixtest);
+            await Verify.CodeFixAsync<EFPERF001CodeFixProvider>(References.NoEF, test, fixtest, expected);
         }
 
         [TestMethod]
-        public void FixSinglePropertyWithAccessor()
+        public async Task FixSinglePropertyWithAccessor()
         {
             var test = @"
     using System;
@@ -321,18 +291,9 @@ namespace EntityFrameworkAnalyzer.Test
             }
         }
     }";
-            var expected = new DiagnosticResult
-            {
-                Id = Diagnostics.EFPERF001.Id,
-                Message = "Variable 'person' is only used for properties: Name",
-                Severity = DiagnosticSeverity.Warning,
-                Locations =
-                    new[] {
-                        new DiagnosticResultLocation("Test0.cs", 23, 21)
-                    }
-            };
-
-            VerifyCSharpDiagnostic(test, expected);
+            var expected = Verify.Diagnostic(Diagnostics.EFPERF001)
+                .WithMessage("Variable 'person' is only used for properties: Name")
+                .WithLocation(23, 21);
 
             var fixtest = @"
     using System;
@@ -361,11 +322,11 @@ namespace EntityFrameworkAnalyzer.Test
             }
         }
     }";
-            VerifyCSharpFix(test, fixtest);
+            await Verify.CodeFixAsync<EFPERF001CodeFixProvider>(References.NoEF, test, fixtest, expected);
         }
 
         [TestMethod]
-        public void FixMultipleProperties()
+        public async Task FixMultipleProperties()
         {
             var test = @"
     using System;
@@ -395,18 +356,9 @@ namespace EntityFrameworkAnalyzer.Test
             }
         }
     }";
-            var expected = new DiagnosticResult
-            {
-                Id = Diagnostics.EFPERF001.Id,
-                Message = "Variable 'person' is only used for properties: Id, Name",
-                Severity = DiagnosticSeverity.Warning,
-                Locations =
-                    new[] {
-                        new DiagnosticResultLocation("Test0.cs", 23, 21)
-                    }
-            };
-
-            VerifyCSharpDiagnostic(test, expected);
+            var expected = Verify.Diagnostic(Diagnostics.EFPERF001)
+                .WithMessage("Variable 'person' is only used for properties: Id, Name")
+                .WithLocation(23, 21);
 
             var fixtest = @"
     using System;
@@ -436,11 +388,11 @@ namespace EntityFrameworkAnalyzer.Test
             }
         }
     }";
-            VerifyCSharpFix(test, fixtest);
+            await Verify.CodeFixAsync<EFPERF001CodeFixProvider>(References.NoEF, test, fixtest, expected);
         }
 
         [TestMethod]
-        public void FixPropertyAndNullCheck()
+        public async Task FixPropertyAndNullCheck()
         {
             var test = @"
     using System;
@@ -472,18 +424,9 @@ namespace EntityFrameworkAnalyzer.Test
             }
         }
     }";
-            var expected = new DiagnosticResult
-            {
-                Id = Diagnostics.EFPERF001.Id,
-                Message = "Variable 'person' is only used for properties: Name",
-                Severity = DiagnosticSeverity.Warning,
-                Locations =
-                    new[] {
-                        new DiagnosticResultLocation("Test0.cs", 23, 21)
-                    }
-            };
-
-            VerifyCSharpDiagnostic(test, expected);
+            var expected = Verify.Diagnostic(Diagnostics.EFPERF001)
+                .WithMessage("Variable 'person' is only used for properties: Name")
+                .WithLocation(23, 21);
 
             var fixtest = @"
     using System;
@@ -515,11 +458,11 @@ namespace EntityFrameworkAnalyzer.Test
             }
         }
     }";
-            VerifyCSharpFix(test, fixtest);
+            await Verify.CodeFixAsync<EFPERF001CodeFixProvider>(References.NoEF, test, fixtest, expected);
         }
 
         [TestMethod]
-        public void FixNullConditionalProperty()
+        public async Task FixNullConditionalProperty()
         {
             var test = @"
     using System;
@@ -548,18 +491,9 @@ namespace EntityFrameworkAnalyzer.Test
             }
         }
     }";
-            var expected = new DiagnosticResult
-            {
-                Id = Diagnostics.EFPERF001.Id,
-                Message = "Variable 'person' is only used for properties: Name",
-                Severity = DiagnosticSeverity.Warning,
-                Locations =
-                    new[] {
-                        new DiagnosticResultLocation("Test0.cs", 23, 21)
-                    }
-            };
-
-            VerifyCSharpDiagnostic(test, expected);
+            var expected = Verify.Diagnostic(Diagnostics.EFPERF001)
+                .WithMessage("Variable 'person' is only used for properties: Name")
+                .WithLocation(23, 21);
 
             var fixtest = @"
     using System;
@@ -588,11 +522,11 @@ namespace EntityFrameworkAnalyzer.Test
             }
         }
     }";
-            VerifyCSharpFix(test, fixtest);
+            await Verify.CodeFixAsync<EFPERF001CodeFixProvider>(References.NoEF, test, fixtest, expected);
         }
 
         [TestMethod]
-        public void FixPropertyAsArgument()
+        public async Task FixPropertyAsArgument()
         {
             var test = @"
     using System;
@@ -617,22 +551,13 @@ namespace EntityFrameworkAnalyzer.Test
             public void Do()
             {
                 var person = people.FirstOrDefault();
-                Console.WriteName(person.Name);
+                Console.WriteLine(person.Name);
             }
         }
     }";
-            var expected = new DiagnosticResult
-            {
-                Id = Diagnostics.EFPERF001.Id,
-                Message = "Variable 'person' is only used for properties: Name",
-                Severity = DiagnosticSeverity.Warning,
-                Locations =
-                    new[] {
-                        new DiagnosticResultLocation("Test0.cs", 23, 21)
-                    }
-            };
-
-            VerifyCSharpDiagnostic(test, expected);
+            var expected = Verify.Diagnostic(Diagnostics.EFPERF001)
+                .WithMessage("Variable 'person' is only used for properties: Name")
+                .WithLocation(23, 21);
 
             var fixtest = @"
     using System;
@@ -657,15 +582,15 @@ namespace EntityFrameworkAnalyzer.Test
             public void Do()
             {
                 var person = people.Select(it => new { it.Name }).FirstOrDefault();
-                Console.WriteName(person.Name);
+                Console.WriteLine(person.Name);
             }
         }
     }";
-            VerifyCSharpFix(test, fixtest);
+            await Verify.CodeFixAsync<EFPERF001CodeFixProvider>(References.NoEF, test, fixtest, expected);
         }
 
         [TestMethod]
-        public void FixAndRewriteCondition()
+        public async Task FixAndRewriteCondition()
         {
             var test = @"
     using System;
@@ -694,18 +619,9 @@ namespace EntityFrameworkAnalyzer.Test
             }
         }
     }";
-            var expected = new DiagnosticResult
-            {
-                Id = Diagnostics.EFPERF001.Id,
-                Message = "Variable 'person' is only used for properties: Name",
-                Severity = DiagnosticSeverity.Warning,
-                Locations =
-                    new[] {
-                        new DiagnosticResultLocation("Test0.cs", 23, 21)
-                    }
-            };
-
-            VerifyCSharpDiagnostic(test, expected);
+            var expected = Verify.Diagnostic(Diagnostics.EFPERF001)
+                .WithMessage("Variable 'person' is only used for properties: Name")
+                .WithLocation(23, 21);
 
             var fixtest = @"
     using System;
@@ -734,11 +650,11 @@ namespace EntityFrameworkAnalyzer.Test
             }
         }
     }";
-            VerifyCSharpFix(test, fixtest);
+            await Verify.CodeFixAsync<EFPERF001CodeFixProvider>(References.NoEF, test, fixtest, expected);
         }
 
         [TestMethod]
-        public void DontSuggestForEnumerable()
+        public async Task DontSuggestForEnumerable()
         {
             var test = @"
     using System.Collections.Generic;
@@ -763,11 +679,11 @@ namespace EntityFrameworkAnalyzer.Test
             }
         }
     }";
-            VerifyCSharpDiagnostic(test);
+            await Verify.AnalyzerAsync(References.NoEF, test);
         }
 
         [TestMethod]
-        public void DontSuggestForMethodAccess()
+        public async Task DontSuggestForMethodAccess()
         {
             var test = @"
     using System.Collections.Generic;
@@ -792,11 +708,11 @@ namespace EntityFrameworkAnalyzer.Test
             }
         }
     }";
-            VerifyCSharpDiagnostic(test);
+            await Verify.AnalyzerAsync(References.NoEF, test);
         }
 
         [TestMethod]
-        public void DontSuggestForMemberAssignment()
+        public async Task DontSuggestForMemberAssignment()
         {
             var test = @"
     using System.Collections.Generic;
@@ -821,11 +737,11 @@ namespace EntityFrameworkAnalyzer.Test
             }
         }
     }";
-            VerifyCSharpDiagnostic(test);
+            await Verify.AnalyzerAsync(References.NoEF, test);
         }
 
         [TestMethod]
-        public void DontSuggestForMemberIncrement()
+        public async Task DontSuggestForMemberIncrement()
         {
             var test = @"
     using System.Collections.Generic;
@@ -850,11 +766,11 @@ namespace EntityFrameworkAnalyzer.Test
             }
         }
     }";
-            VerifyCSharpDiagnostic(test);
+            await Verify.AnalyzerAsync(References.NoEF, test);
         }
 
         [TestMethod]
-        public void DontSuggestForMemberNameof()
+        public async Task DontSuggestForMemberNameof()
         {
             var test = @"
     using System.Collections.Generic;
@@ -879,11 +795,11 @@ namespace EntityFrameworkAnalyzer.Test
             }
         }
     }";
-            VerifyCSharpDiagnostic(test);
+            await Verify.AnalyzerAsync(References.NoEF, test);
         }
 
         [TestMethod]
-        public void DontSuggestForTypedAssignment()
+        public async Task DontSuggestForTypedAssignment()
         {
             // TODO: Might suggest info with change from Person to var
             var test = @"
@@ -909,11 +825,11 @@ namespace EntityFrameworkAnalyzer.Test
             }
         }
     }";
-            VerifyCSharpDiagnostic(test);
+            await Verify.AnalyzerAsync(References.NoEF, test);
         }
 
         [TestMethod]
-        public void DontSuggestForSeparateAssignment()
+        public async Task DontSuggestForSeparateAssignment()
         {
             var test = @"
     using System.Collections.Generic;
@@ -939,11 +855,11 @@ namespace EntityFrameworkAnalyzer.Test
             }
         }
     }";
-            VerifyCSharpDiagnostic(test);
+            await Verify.AnalyzerAsync(References.NoEF, test);
         }
 
         [TestMethod]
-        public void DontSuggestForCollectionMemberMethod()
+        public async Task DontSuggestForCollectionMemberMethod()
         {
             var test = @"
     using System.Collections.Generic;
@@ -969,11 +885,11 @@ namespace EntityFrameworkAnalyzer.Test
             }
         }
     }";
-            VerifyCSharpDiagnostic(test);
+            await Verify.AnalyzerAsync(References.NoEF, test);
         }
 
         [TestMethod]
-        public void DontSuggestForExtensionMethod()
+        public async Task DontSuggestForExtensionMethod()
         {
             // TODO: Might suggest info when argument is of type object/generic
             var test = @"
@@ -1006,11 +922,11 @@ namespace EntityFrameworkAnalyzer.Test
             }
         }
     }";
-            VerifyCSharpDiagnostic(test);
+            await Verify.AnalyzerAsync(References.NoEF, test);
         }
 
         [TestMethod]
-        public void DontSuggestForProjectedQueryable()
+        public async Task DontSuggestForProjectedQueryable()
         {
             var test = @"
     using System.Collections.Generic;
@@ -1035,17 +951,7 @@ namespace EntityFrameworkAnalyzer.Test
             }
         }
     }";
-            VerifyCSharpDiagnostic(test);
-        }
-
-        protected override CodeFixProvider GetCSharpCodeFixProvider()
-        {
-            return new EFPERF001CodeFixProvider();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new EFPerfAnalyzer();
+            await Verify.AnalyzerAsync(References.NoEF, test);
         }
     }
 }
