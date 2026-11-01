@@ -85,5 +85,7 @@ dotnet test
 dotnet pack -c Release
 ```
 
+Pushing a `vX.Y.Z` tag publishes version X.Y.Z to nuget.org.
+
 ## License
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fstevehansen%2Fef-perf-analyzer.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fstevehansen%2Fef-perf-analyzer?ref=badge_large)
