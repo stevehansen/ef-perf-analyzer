@@ -2,5 +2,13 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "github>stevehansen/renovate-config"
+  ],
+  "packageRules": [
+    {
+      "description": "The analyzer's Roslyn version is the oldest VS/SDK it loads in; raise it on purpose, not through automerge",
+      "matchFileNames": ["EntityFrameworkAnalyzer/EntityFrameworkAnalyzer/EntityFrameworkAnalyzer.csproj"],
+      "matchPackageNames": ["Microsoft.CodeAnalysis.CSharp.Workspaces"],
+      "enabled": false
+    }
   ]
 }
